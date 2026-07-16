@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VNMSFX — AI Production Systems</title>
+<meta name="description" content="A one-person studio running on file-based agent infrastructure: locked pipelines, compounding eval loops, human-in-the-loop controls — shipping original AI series.">
+<style>
+  :root{
+    --bg:#0a0a0f; --surface:#13131a; --surface2:#1a1a24; --line:#26262f;
+    --ink:#ececf1; --mut:#9a9aa6; --dim:#63636e;
+    --acc:#b06bff; --acc-deep:#7c3aed; --acc-ink:#d9c2ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--acc-ink);text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .label{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--acc);font-weight:600}
+  nav{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{font-weight:800;letter-spacing:.18em;font-size:14px;color:var(--ink)}
+  .logo span{color:var(--acc)}
+  nav .links{display:flex;gap:26px;font-size:13px;color:var(--mut)}
+  nav .links a{color:var(--mut)} nav .links a:hover{color:var(--ink)}
+  header{padding:110px 0 70px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}
+  h1{font-size:clamp(34px,5.6vw,58px);line-height:1.08;letter-spacing:-.02em;font-weight:800;max-width:820px}
+  h1 em{font-style:normal;color:var(--acc)}
+  .sub{margin-top:22px;font-size:17px;color:var(--mut);max-width:660px}
+  .stats{display:flex;flex-wrap:wrap;gap:0;margin-top:44px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .stat{flex:1 1 140px;padding:18px 20px;background:var(--surface);border-right:1px solid var(--line)}
+  .stat:last-child{border-right:0}
+  .stat b{display:block;font-size:26px;font-weight:800;color:var(--ink)}
+  .stat span{font-size:12.5px;color:var(--dim)}
+  section{padding:78px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:clamp(24px,3.4vw,34px);letter-spacing:-.01em;font-weight:800;margin:10px 0 8px}
+  .lede{color:var(--mut);max-width:640px;font-size:15.5px}
+  .show{margin-top:52px}
+  .show-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+  .show-head h3{font-size:22px;font-weight:800;letter-spacing:.04em}
+  .tagline{color:var(--acc-ink);font-size:14px;font-style:italic}
+  .show-desc{color:var(--mut);font-size:14px;max-width:620px;margin-top:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:22px}
+  .card{position:relative;aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:var(--surface2);border:1px solid var(--line);cursor:pointer;transition:transform .18s ease,border-color .18s ease}
+  .card:hover{transform:translateY(-3px);border-color:var(--acc-deep)}
+  .card img,.card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .card .veil{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(5,5,10,.88));display:flex;flex-direction:column;justify-content:flex-end;padding:12px;pointer-events:none}
+  .card .ep{font-size:11px;letter-spacing:.14em;color:var(--acc);font-weight:700}
+  .card .t{font-size:14px;font-weight:700;line-height:1.25}
+  .card .d{font-size:11.5px;color:var(--mut)}
+  .card .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(10,10,15,.72);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .15s}
+  .card .play::after{content:"";display:block;margin-left:3px;border-left:12px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent}
+  .card.playing .play,.card.playing .veil{opacity:0}
+  .bands{margin-top:36px;display:flex;flex-direction:column;gap:10px}
+  .band{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .band .bn{font-size:11px;letter-spacing:.18em;color:var(--acc);font-weight:700;min-width:110px}
+  .band .bt{font-size:14.5px;color:var(--ink);font-weight:600;min-width:170px}
+  .band .bd{font-size:13px;color:var(--mut);flex:1}
+  .ratchet{display:flex;gap:10px;align-items:center;padding:14px 18px;border:1px dashed var(--acc-deep);border-radius:12px;background:rgba(124,58,237,.06)}
+  .ratchet .bn{font-size:11px;letter-spacing:.18em;color:var(--acc);font-weight:700;min-width:110px}
+  .ratchet .bd{font-size:13.5px;color:var(--acc-ink)}
+  .pillars{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:34px}
+  .pillar{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .pillar b{display:block;font-size:15px;margin-bottom:6px}
+  .pillar p{font-size:13.5px;color:var(--mut)}
+  .results{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .res{border-left:2px solid var(--acc-deep);padding:4px 0 4px 16px}
+  .res b{display:block;font-size:14.5px}
+  .res span{font-size:13px;color:var(--mut)}
+  .vault{margin-top:46px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+  .vault .label{white-space:nowrap}
+  .vault p{font-size:14px;color:var(--mut);flex:1;min-width:260px}
+  .contact-row{margin-top:26px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btn{display:inline-block;padding:12px 22px;border-radius:10px;font-weight:700;font-size:14px}
+  .btn.primary{background:var(--acc-deep);color:#fff}
+  .btn.primary:hover{background:var(--acc)}
+  .btn.ghost{border:1px solid var(--line);color:var(--ink)}
+  footer{padding:44px 0;color:var(--dim);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="logo">VNM<span>SFX</span></div>
+  <div class="links"><a href="#work">Work</a><a href="#system">System</a><a href="#results">Results</a><a href="#contact">Contact</a></div>
+</div></nav>
+
+<header><div class="wrap">
+  <div class="label">VNMSFX · AI Production Systems</div>
+  <h1 style="margin-top:14px">I build AI production systems<br>that <em>ship</em>.</h1>
+  <p class="sub">VNMSFX is a one-person studio running on file-based agent infrastructure — a locked seven-stage pipeline with compounding eval loops and human-in-the-loop controls. The episodes below weren't made despite AI's chaos. They exist because the system disciplines it.</p>
+  <div class="stats">
+    <div class="stat"><b>2</b><span>original series in production</span></div>
+    <div class="stat"><b>16</b><span>episodes through the pipeline</span></div>
+    <div class="stat"><b>7</b><span>print-graded masters</span></div>
+    <div class="stat"><b>1</b><span>self-governing system</span></div>
+  </div>
+</div></header>
+
+<section id="work"><div class="wrap">
+  <div class="label">The Work</div>
+  <h2>Two series. One factory.</h2>
+  <p class="lede">Every clip below is AI-generated end-to-end — cast, performance, camera, sound — directed through written prompt systems, screened against kill criteria, and finished with a house film grade. Tap any card to play.</p>
+
+  <div class="show reveal">
+    <div class="show-head"><h3>PEACETIME</h3><span class="tagline">The war is over. The office isn't.</span></div>
+    <p class="show-desc">A mockumentary sitcom about retired war robots working at a mid-size insurance company — shot in the style of a 1987 cel-animated TV master, graded on a custom FFmpeg film pipeline.</p>
+    <div class="grid">
+      <div class="card" data-v="media/pt-ep01.mp4"><img src="media/pt-ep01.jpg" alt="PEACETIME EP01" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP01</span><span class="t">The Desk</span><span class="d">A god gets a promotion.</span></div></div>
+      <div class="card" data-v="media/pt-ep04.mp4"><img src="media/pt-ep04.jpg" alt="PEACETIME EP04" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP04</span><span class="t">Taco Friday</span><span class="d">A crisis behind a closed door.</span></div></div>
+      <div class="card" data-v="media/pt-ep06.mp4"><img src="media/pt-ep06.jpg" alt="PEACETIME EP06" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP06</span><span class="t">The Energy</span><span class="d">HR has concerns.</span></div></div>
+      <div class="card" data-v="media/pt-ep07.mp4"><img src="media/pt-ep07.jpg" alt="PEACETIME EP07" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP07</span><span class="t">The Banana</span><span class="d">Produce-aisle diplomacy.</span></div></div>
+      <div class="card" data-v="media/pt-ep09.mp4"><img src="media/pt-ep09.jpg" alt="PEACETIME EP09" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP09</span><span class="t">The Urinal</span><span class="d">Etiquette, violated.</span></div></div>
+      <div class="card" data-v="media/pt-ep10.mp4"><img src="media/pt-ep10.jpg" alt="PEACETIME EP10" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP10</span><span class="t">The Seminar</span><span class="d">Mandatory. Very mandatory.</span></div></div>
+      <div class="card" data-v="media/pt-ep11.mp4"><img src="media/pt-ep11.jpg" alt="PEACETIME EP11" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP11</span><span class="t">The One-on-One</span><span class="d">A review escalates.</span></div></div>
+      <div class="card" data-v="media/pt-ep12.mp4"><img src="media/pt-ep12.jpg" alt="PEACETIME EP12" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP12</span><span class="t">The Exit Interview</span><span class="d">Eleven years of honesty.</span></div></div>
+      <div class="card" data-v="media/pt-ep13.mp4"><img src="media/pt-ep13.jpg" alt="PEACETIME EP13" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP13</span><span class="t">The Parking Lot</span><span class="d">Divorce. Night. Stardust.</span></div></div>
+    </div>
+  </div>
+
+  <div class="show reveal">
+    <div class="show-head"><h3>THE LAST VERSION</h3><span class="tagline">Everyday pettiness. Spy-world consequences.</span></div>
+    <p class="show-desc">Fifteen-second cold opens where a familiar modern annoyance triggers lethal tradecraft — graded in the series' OLIVE-GLASS look, matched shot-to-shot across episodes.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr));max-width:660px">
+      <div class="card" data-v="media/lv-ep01.mp4"><img src="media/lv-ep01.jpg" alt="THE LAST VERSION EP01" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP01</span><span class="t">Saved Them a Flood</span></div></div>
+      <div class="card" data-v="media/lv-ep02.mp4"><img src="media/lv-ep02.jpg" alt="THE LAST VERSION EP02" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP02</span><span class="t">Break My Door</span></div></div>
+      <div class="card" data-v="media/lv-ep03.mp4"><img src="media/lv-ep03.jpg" alt="THE LAST VERSION EP03" loading="lazy"><div class="play"></div><div class="veil"><span class="ep">EP03</span><span class="t">The Draft</span></div></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="system"><div class="wrap">
+  <div class="label">The System</div>
+  <h2>The videos are the output.<br>The system is the product.</h2>
+  <p class="lede">Generative models drift, forget, and ignore instructions. The studio wraps them in an operating system — plain-text law, versioned in git, that an AI agent boots from on every session. Four layers:</p>
+
+  <div class="bands reveal">
+    <div class="band"><span class="bn">01 · THE LAW</span><span class="bt">A constitution that auto-loads</span><span class="bd">Stage discipline, quality gates, cost controls — and drop-detection: hand the system an image, a take, or a trigger word, and the correct stage fires with zero instructions.</span></div>
+    <div class="band"><span class="bn">02 · THE LINE</span><span class="bt">Seven stages, locked gates</span><span class="bd">Look development → cast → series bible → episode prompt → generation → screening → ship. No stage starts before the previous gate locks. Nothing runs from memory — every stage executes from a versioned methodology file.</span></div>
+    <div class="band"><span class="bn">03 · THE SCREEN</span><span class="bt">Every output is screened — wins included</span><span class="bd">Frame sheets, transcripts, and kill criteria decided before generating, not after. Verdicts and failure tags are logged, one line per take, forever.</span></div>
+    <div class="band"><span class="bn">04 · THE MEMORY</span><span class="bt">Failures become law</span><span class="bd">Every screening writes its lesson to a ledger the system re-reads before all future work. A scheduled review counts failure patterns and promotes anything seen twice into permanent law.</span></div>
+  </div>
+  <div class="ratchet reveal" style="margin-top:10px"><span class="bn">THE RATCHET</span><span class="bd">Quality mechanically cannot slip backward. The top historical failure class was eliminated by a single written law — zero recurrences since.</span></div>
+
+  <div class="pillars reveal">
+    <div class="pillar"><b>State on disk, never in the model</b><p>The agent is disposable; the system is not. Every project boots from files, so it survives session resets, context loss, and model swaps.</p></div>
+    <div class="pillar"><b>Deterministic gates around a stochastic core</b><p>Scripts measure what judgment used to eyeball — prompt caps counted, screenings auto-extracted, finishing grades triggered by a single word.</p></div>
+    <div class="pillar"><b>An eval layer that coaches its operator</b><p>The scoreboard doesn't just track the AI's failures — it surfaces the human's recurring blind spots and says them out loud.</p></div>
+    <div class="pillar"><b>Human-in-the-loop by design</b><p>The system pitches slates of options with a recommendation. Money is never spent and nothing publishes without an explicit human pick.</p></div>
+    <div class="pillar"><b>Taste, converted into process</b><p>Directorial method — coverage, rhythm, signal theory — encoded as advisory checkpoints that run on every episode automatically.</p></div>
+    <div class="pillar"><b>Replicable in any domain</b><p>The whole studio rebuilds itself from a single bootstrap: a structured intake interview whose answers fill verbatim templates, verified by checklist. Video was the test case.</p></div>
+  </div>
+
+  <div class="vault reveal">
+    <span class="label">What's not on this page</span>
+    <p>The constitution text, the stage instruments, the prompt architecture, and the bootstrap itself — the trade secrets stay in the vault. I walk through them live, happily.</p>
+  </div>
+</div></section>
+
+<section id="results"><div class="wrap">
+  <div class="label">Selected Results</div>
+  <h2>Receipts.</h2>
+  <div class="results reveal">
+    <div class="res"><b>Top failure class → zero</b><span>Spatial/orientation errors were the #1 kill tag. One written law later: no recurrence across every subsequent episode.</span></div>
+    <div class="res"><b>V1 → V6, every fix named</b><span>An action episode's six versions each fixed a documented defect — and each fix became permanent law before the next take.</span></div>
+    <div class="res"><b>Measured, never eyeballed</b><span>A hard 4,000-character platform cap enforced by script on every prompt after a single overflow incident. It never happened again.</span></div>
+    <div class="res"><b>The system coached me</b><span>The eval layer's first pattern review identified my own top unsolved failure mode — and the post workflow that fixes it.</span></div>
+  </div>
+</div></section>
+
+<section id="contact" style="border-bottom:0"><div class="wrap">
+  <div class="label">Contact</div>
+  <h2>See the whole machine.</h2>
+  <p class="lede">I'm Brandon Adams — builder and showrunner of VNMSFX. The full system walkthrough (live, with the vault open) is available on request.</p>
+  <div class="contact-row">
+    <a class="btn primary" href="mailto:brandon@pushto6.com">brandon@pushto6.com</a>
+    <a class="btn ghost" href="#work">Watch the work again</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:0">
+  <span>© 2026 VNMSFX</span>
+  <span>Built inside the system it describes.</span>
+</div></footer>
+
+<script>
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      if(card.classList.contains('playing')){
+        const v=card.querySelector('video');
+        if(v){ v.paused ? v.play() : v.pause(); }
+        return;
+      }
+      document.querySelectorAll('.card.playing video').forEach(v=>{v.pause();});
+      const src=card.dataset.v;
+      const vid=document.createElement('video');
+      vid.src=src; vid.controls=true; vid.autoplay=true; vid.playsInline=true;
+      card.insertBefore(vid, card.querySelector('.play'));
+      card.classList.add('playing');
+    });
+  });
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
